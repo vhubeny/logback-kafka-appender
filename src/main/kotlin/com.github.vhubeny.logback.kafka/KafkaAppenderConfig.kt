@@ -1,6 +1,5 @@
 package com.github.vhubeny.logback.kafka
 
-
 import ch.qos.logback.core.UnsynchronizedAppenderBase
 import ch.qos.logback.core.encoder.Encoder
 import ch.qos.logback.core.spi.AppenderAttachable
@@ -12,18 +11,15 @@ import org.apache.kafka.clients.producer.ProducerConfig.*
 import java.util.*
 
 
-/**
- * @since 0.0.1
- */
 abstract class KafkaAppenderConfig<E> : UnsynchronizedAppenderBase<E>(), AppenderAttachable<E> {
 
-    protected var topic: String? = null
-    protected var encoder: Encoder<E>? = null
-    protected var keyingStrategy: KeyingStrategy<in E>? = null
-    protected var deliveryStrategy: DeliveryStrategy? = null
-    protected var partition: Int? = null
+    var topic: String? = null
+    var encoder: Encoder<E>? = null
+    var keyingStrategy: KeyingStrategy<in E>? = null
+    var deliveryStrategy: DeliveryStrategy? = null
+    var partition: Int? = null
     var isAppendTimestamp = true
-    protected var producerConfig: MutableMap<String, Any?> = HashMap()
+    var producerConfig: MutableMap<String, Any?> = HashMap()
     protected fun checkPrerequisites(): Boolean {
         var errorFree = true
         if (producerConfig[BOOTSTRAP_SERVERS_CONFIG] == null) {

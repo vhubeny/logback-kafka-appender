@@ -13,10 +13,6 @@ import org.apache.kafka.common.serialization.ByteArraySerializer
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 
-
-/**
- * @since 0.0.1
- */
 class KafkaAppender<E> : KafkaAppenderConfig<E>() {
     private var lazyProducer: LazyProducer? = null
     private val aai = AppenderAttachableImpl<E>()
@@ -24,7 +20,7 @@ class KafkaAppender<E> : KafkaAppenderConfig<E>() {
 
     private val failedDeliveryCallback = object : FailedDeliveryCallback<E> {
         override fun onFailedDelivery(evt: E, throwable: Throwable?) {
-                aai.appendLoopOnAppenders(evt)
+            aai.appendLoopOnAppenders(evt)
         }
     }
 
@@ -87,14 +83,13 @@ class KafkaAppender<E> : KafkaAppenderConfig<E>() {
         return aai.detachAppender(name)
     }
 
-    override fun append(e: E) {
-        val payload = encoder?.encode(e) as ByteArray
-        val key = keyingStrategy?.createKey(e) as ByteArray
+    public override fun append(e: E) {
+        val payload = encoder?.encode(e)
+        val key = keyingStrategy?.createKey(e)
         val timestamp = if (isAppendTimestamp) getTimestamp(e) else null
-        val record = ProducerRecord(topic, partition, timestamp, key, payload)
+        val record = ProducerRecord<ByteArray, ByteArray>(topic, partition, timestamp, key, payload)
         val producer = lazyProducer!!.get()
         if (producer != null) {
-
             deliveryStrategy?.send(producer, record, e, failedDeliveryCallback)
         } else {
             failedDeliveryCallback.onFailedDelivery(e, null)
