@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.vhubeny</groupId>
     <artifactId>logback-kafka-appender</artifactId>
-    <version>0.2.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <parent>
         <groupId>org.sonatype.oss</groupId>
         <artifactId>oss-parent</artifactId>
@@ -22,16 +22,15 @@
 
     <properties>
         <!--General stuff-->
-        <targetJdk>1.8</targetJdk>
+        <java.version>11</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.build.resourceEncoding>UTF-8</project.build.resourceEncoding>
-        <maven.compiler.source>${targetJdk}</maven.compiler.source>
-        <maven.compiler.target>${targetJdk}</maven.compiler.target>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
         <encoding>UTF-8</encoding>
         <slf4j.version>1.7.25</slf4j.version>
         <kafka.version>2.1.1</kafka.version>
 
-        <java.version>11</java.version>
         <kotlin.version>1.7.21</kotlin.version>
     </properties>
 
@@ -60,12 +59,6 @@
 
 
     <dependencies>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.1</version>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-all</artifactId>
@@ -172,7 +165,7 @@
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-test</artifactId>
+            <artifactId>kotlin-test-junit</artifactId>
             <version>${kotlin.version}</version>
             <scope>test</scope>
         </dependency>
@@ -386,7 +379,6 @@
                         </goals>
                         <configuration>
                             <sourceDirs>
-                                <source>src/main/java</source>
                                 <source>src/main/kotlin</source>
                             </sourceDirs>
                         </configuration>
@@ -399,7 +391,6 @@
                         </goals>
                         <configuration>
                             <sourceDirs>
-                                <source>src/test/java</source>
                                 <source>src/test/kotlin</source>
                             </sourceDirs>
                         </configuration>

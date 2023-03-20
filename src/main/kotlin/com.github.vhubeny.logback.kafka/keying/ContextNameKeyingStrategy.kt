@@ -4,9 +4,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.Context
 import ch.qos.logback.core.CoreConstants
 import ch.qos.logback.core.spi.ContextAwareBase
-import com.github.danielwegener.logback.kafka.keying.KeyingStrategy
 import java.nio.ByteBuffer
-
 
 /**
  * This strategy uses logbacks CONTEXT_NAME as kafka message key.
@@ -26,7 +24,7 @@ class ContextNameKeyingStrategy : ContextAwareBase(), KeyingStrategy<ILoggingEve
         }
     }
 
-    override fun createKey(e: ILoggingEvent?): ByteArray? {
+    override fun createKey(e: ILoggingEvent?): ByteArray {
         return contextNameHash!!
     }
 }
