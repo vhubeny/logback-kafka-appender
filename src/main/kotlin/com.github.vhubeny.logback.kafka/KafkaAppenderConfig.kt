@@ -65,7 +65,7 @@ abstract class KafkaAppenderConfig<E> : UnsynchronizedAppenderBase<E>(), Appende
     */
 
     fun addProducerConfig(keyValue: String) {
-        val split: Array<String> = keyValue.split("=", 2.toBoolean()).toTypedArray()
+        val split: Array<String> = keyValue.split("=").toTypedArray()
         if (split.size == 2) addProducerConfigValue(split[0], split[1])
     }
 
