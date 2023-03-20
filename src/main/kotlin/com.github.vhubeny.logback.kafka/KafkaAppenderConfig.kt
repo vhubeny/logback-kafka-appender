@@ -69,7 +69,7 @@ abstract class KafkaAppenderConfig<E> : UnsynchronizedAppenderBase<E>(), Appende
         if (split.size == 2) addProducerConfigValue(split[0], split[1])
     }
 
-    fun addProducerConfigValue(key: String, value: Any?) {
+    fun addProducerConfigValue(key: String, value: Any) {
         producerConfig[key] = value
     }
     /*

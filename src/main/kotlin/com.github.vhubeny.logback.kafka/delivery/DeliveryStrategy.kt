@@ -20,5 +20,5 @@ interface DeliveryStrategy {
      * @param <E> the type of the logging event.
      * @return `true` if the message could be sent successfully, `false` otherwise.
     </E></V></K> */
-    fun <K, V, E> send(producer: Producer<K, V>?, record: ProducerRecord<K, V>?, event: E, failedDeliveryCallback: FailedDeliveryCallback<E>?): Boolean
+    fun <K, V, E> send(producer: Producer<K, V>, record: ProducerRecord<K, V>, event: E, failedDeliveryCallback: FailedDeliveryCallback<E>): Boolean
 }

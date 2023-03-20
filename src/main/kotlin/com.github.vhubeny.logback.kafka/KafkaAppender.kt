@@ -3,7 +3,6 @@ package com.github.vhubeny.logback.kafka
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.Appender
 import ch.qos.logback.core.spi.AppenderAttachableImpl
-import com.github.vhubeny.logback.kafka.KafkaAppenderConfig
 import com.github.vhubeny.logback.kafka.delivery.FailedDeliveryCallback
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.Producer
@@ -23,9 +22,9 @@ class KafkaAppender<E> : KafkaAppenderConfig<E>() {
     private val aai = AppenderAttachableImpl<E>()
     private val queue = ConcurrentLinkedQueue<E>()
 
-    private val failedDeliveryCallback: FailedDeliveryCallback<E> = object : FailedDeliveryCallback<E> {
+    private val failedDeliveryCallback = object : FailedDeliveryCallback<E> {
         override fun onFailedDelivery(evt: E, throwable: Throwable?) {
-            aai.appendLoopOnAppenders(evt)
+                aai.appendLoopOnAppenders(evt)
         }
     }
 
@@ -89,13 +88,14 @@ class KafkaAppender<E> : KafkaAppenderConfig<E>() {
     }
 
     override fun append(e: E) {
-        val payload = encoder?.encode(e)
-        val key = keyingStrategy?.createKey(e)
+        val payload = encoder?.encode(e) as ByteArray
+        val key = keyingStrategy?.createKey(e) as ByteArray
         val timestamp = if (isAppendTimestamp) getTimestamp(e) else null
         val record = ProducerRecord(topic, partition, timestamp, key, payload)
         val producer = lazyProducer!!.get()
         if (producer != null) {
-            deliveryStrategy?.send(lazyProducer!!.get(), record, e, failedDeliveryCallback)
+
+            deliveryStrategy?.send(producer, record, e, failedDeliveryCallback)
         } else {
             failedDeliveryCallback.onFailedDelivery(e, null)
         }
@@ -171,7 +171,7 @@ class KafkaAppender<E> : KafkaAppenderConfig<E>() {
 
     init {
         // setting these as config values sidesteps an unnecessary warning (minor bug in KafkaProducer)
-        addProducerConfigValue(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, ByteArraySerializer::class.java.getName())
-        addProducerConfigValue(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer::class.java.getName())
+        addProducerConfigValue(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, ByteArraySerializer::class.qualifiedName!!)
+        addProducerConfigValue(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer::class.qualifiedName!!)
     }
 }
