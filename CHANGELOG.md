@@ -1,6 +1,8 @@
 # Change Log
 All notable changes to this project will be documented in this file.
-
+## [Unrelease 0.2.1]
+### Changed
+- migrated to Kotlin 1.7.x
 ## [Unreleased 0.2.0]
 ### Changed
 - Fixed typos in logback warning messages emitted by `com.github.danielwegener.logback.kafka.KafkaAppenderConfig` (#28)
