@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.github.danielwegener</groupId>
+    <groupId>com.github.vhubeny</groupId>
     <artifactId>logback-kafka-appender</artifactId>
     <version>0.2.0-SNAPSHOT</version>
     <parent>
@@ -11,7 +11,7 @@
         <version>9</version>
     </parent>
 
-    <url>https://github.com/danielwegener/logback-kafka-appender</url>
+    <url>https://github.com/vhubeny/logback-kafka-appender</url>
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
@@ -30,31 +30,33 @@
         <encoding>UTF-8</encoding>
         <slf4j.version>1.7.25</slf4j.version>
         <kafka.version>2.1.1</kafka.version>
-        <kotlin.version>1.0.0</kotlin.version>
+
+        <java.version>11</java.version>
+        <kotlin.version>1.7.21</kotlin.version>
     </properties>
 
     <issueManagement>
-        <url>https://github.com/danielwegener/logback-kafka-appender/issues</url>
+        <url>https://github.com/vhubeny/logback-kafka-appender/issues</url>
         <system>GitHub Issues</system>
     </issueManagement>
 
     <scm>
-        <connection>scm:git:git@github.com:danielwegener/logback-kafka-appender.git</connection>
-        <developerConnection>scm:git:git@github.com:danielwegener/logback-kafka-appender.git</developerConnection>
-        <url>git@github.com:danielwegener/logback-kafka-appender.git</url>
+        <connection>scm:git:git@github.com:vhubeny/logback-kafka-appender.git</connection>
+        <developerConnection>scm:git:git@github.com:vhubeny/logback-kafka-appender.git</developerConnection>
+        <url>git@github.com:vhubeny/logback-kafka-appender.git</url>
         <tag>HEAD</tag>
     </scm>
 
     <developers>
         <developer>
-            <email>daniel@wegener.me</email>
-            <name>Daniel Wegener</name>
-            <url>https://github.com/danielwegener</url>
-            <id>danielwegener</id>
+            <email>vhubeny@gmail.com</email>
+            <name>Vitezslav Hubeny</name>
+            <url>https://github.com/vhubeny</url>
+            <id>vhubeny</id>
         </developer>
     </developers>
 
-    <inceptionYear>2015</inceptionYear>
+    <inceptionYear>2023</inceptionYear>
 
 
     <dependencies>
@@ -174,6 +176,10 @@
             <version>${kotlin.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-reflect</artifactId>
+            <version>${kotlin.version}</version></dependency>
     </dependencies>
 
 
