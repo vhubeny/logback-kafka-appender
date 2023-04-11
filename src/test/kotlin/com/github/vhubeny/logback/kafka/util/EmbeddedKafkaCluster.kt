@@ -8,8 +8,8 @@ import scala.collection.immutable.`Vector$`
 import java.io.File
 import java.io.FileNotFoundException
 
-class EmbeddedKafkaCluster(val zkConnection: String?, baseProperties: Map<String?, String?>, ports: List<Int>) {
-    val ports: List<Int>
+class EmbeddedKafkaCluster(private val zkConnection: String?, baseProperties: Map<String?, String?>, ports: List<Int>) {
+    private val ports: List<Int>
     private val baseProperties: Map<String?, String?>
     val brokerList: String
     private val brokers: MutableList<KafkaServer>
@@ -40,7 +40,7 @@ class EmbeddedKafkaCluster(val zkConnection: String?, baseProperties: Map<String
     private fun constructBrokerList(ports: List<Int>): String {
         val sb = StringBuilder()
         for (port in ports) {
-            if (sb.length > 0) {
+            if (sb.isNotEmpty()) {
                 sb.append(",")
             }
             sb.append("localhost:").append(port)
@@ -57,8 +57,8 @@ class EmbeddedKafkaCluster(val zkConnection: String?, baseProperties: Map<String
             properties["zookeeper.connect"] = zkConnection
             properties["broker.id"] = (i + 1).toString()
             properties["host.name"] = "localhost"
-            properties["port"] = Integer.toString(port)
-            properties["log.dir"] = logDir!!.absolutePath
+            properties["port"] = port.toString()
+            properties["log.dir"] = logDir.absolutePath
             properties["log.flush.interval.messages"] = 1.toString()
             properties["advertised.host.name"] = "localhost"
             val broker = startBroker(properties)

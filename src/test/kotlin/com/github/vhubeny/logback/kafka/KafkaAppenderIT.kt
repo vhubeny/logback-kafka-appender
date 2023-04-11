@@ -23,6 +23,7 @@ import java.util.*
 import java.util.concurrent.ThreadLocalRandom
 
 class KafkaAppenderIT {
+    @JvmField
     @Rule
     var collector = ErrorCollector()
     private var kafka: TestKafka? = null
@@ -61,7 +62,7 @@ class KafkaAppenderIT {
         unit!!.keyingStrategy = NoKeyKeyingStrategy()
         unit!!.deliveryStrategy = AsynchronousDeliveryStrategy()
         unit!!.addAppender(fallbackAppender)
-        unit!!.addProducerConfigValue(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafka!!.brokerList)
+        unit!!.addProducerConfigValue(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafka!!.brokerList!!)
         unit!!.addProducerConfigValue(ProducerConfig.ACKS_CONFIG, "1")
         unit!!.addProducerConfigValue(ProducerConfig.MAX_BLOCK_MS_CONFIG, "2000")
         unit!!.addProducerConfigValue(ProducerConfig.LINGER_MS_CONFIG, "100")
@@ -94,13 +95,14 @@ class KafkaAppenderIT {
         Assert.assertTrue("appender is started", unit!!.isStarted)
         val messages = BitSet(messageCount)
         for (i in 0 until messageCount) {
-            val prefix = Integer.toString(i) + ";"
+            val prefix = "$i;"
             val sb = StringBuilder()
             sb.append(prefix)
             val b = ByteArray(messageSize - prefix.length)
             ThreadLocalRandom.current().nextBytes(b)
-            for (bb in b) {
-                sb.append(Char(bb.toUShort()).code and 0x7F)
+            for (bb : Byte in b) {
+                val bbUShort: UShort= (bb.toUShort()).and(127u) //0x7F - aka add 128
+                sb.append(bbUShort)
             }
             val loggingEvent = LoggingEvent("a.b.c.d", logger, Level.INFO, sb.toString(), null, arrayOfNulls(0))
             unit!!.append(loggingEvent)

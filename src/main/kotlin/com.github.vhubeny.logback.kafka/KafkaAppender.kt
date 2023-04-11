@@ -14,13 +14,13 @@ import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 
 class KafkaAppender<E> : KafkaAppenderConfig<E>() {
-    private var lazyProducer: LazyProducer? = null
-    private val aai = AppenderAttachableImpl<E>()
+    private var producer: LazyProducer? = null
+    private val appender = AppenderAttachableImpl<E>()
     private val queue = ConcurrentLinkedQueue<E>()
 
     private val failedDeliveryCallback = object : FailedDeliveryCallback<E> {
         override fun onFailedDelivery(evt: E, throwable: Throwable?) {
-            aai.appendLoopOnAppenders(evt)
+            appender.appendLoopOnAppenders(evt)
         }
     }
 
@@ -39,48 +39,48 @@ class KafkaAppender<E> : KafkaAppenderConfig<E>() {
         if (partition != null && partition!! < 0) {
             partition = null
         }
-        lazyProducer = LazyProducer()
+        producer = LazyProducer()
         super.start()
     }
 
     override fun stop() {
         super.stop()
-        if (lazyProducer != null && lazyProducer!!.isInitialized) {
+        if (producer != null && producer!!.isInitialized) {
             try {
-                lazyProducer!!.get()!!.close()
+                producer!!.get()!!.close()
             } catch (e: KafkaException) {
                 this.addWarn("Failed to shut down kafka producer: " + e.message, e)
             }
-            lazyProducer = null
+            producer = null
         }
     }
 
     override fun addAppender(newAppender: Appender<E>) {
-        aai.addAppender(newAppender)
+        appender.addAppender(newAppender)
     }
 
     override fun iteratorForAppenders(): Iterator<Appender<E>> {
-        return aai.iteratorForAppenders()
+        return appender.iteratorForAppenders()
     }
 
     override fun getAppender(name: String): Appender<E> {
-        return aai.getAppender(name)
+        return appender.getAppender(name)
     }
 
     override fun isAttached(appender: Appender<E>): Boolean {
-        return aai.isAttached(appender)
+        return this.appender.isAttached(appender)
     }
 
     override fun detachAndStopAllAppenders() {
-        aai.detachAndStopAllAppenders()
+        appender.detachAndStopAllAppenders()
     }
 
     override fun detachAppender(appender: Appender<E>): Boolean {
-        return aai.detachAppender(appender)
+        return this.appender.detachAppender(appender)
     }
 
     override fun detachAppender(name: String): Boolean {
-        return aai.detachAppender(name)
+        return appender.detachAppender(name)
     }
 
     public override fun append(e: E) {
@@ -88,7 +88,7 @@ class KafkaAppender<E> : KafkaAppenderConfig<E>() {
         val key = keyingStrategy?.createKey(e)
         val timestamp = if (isAppendTimestamp) getTimestamp(e) else null
         val record = ProducerRecord<ByteArray, ByteArray>(topic, partition, timestamp, key, payload)
-        val producer = lazyProducer!!.get()
+        val producer = producer!!.get()
         if (producer != null) {
             deliveryStrategy?.send(producer, record, e, failedDeliveryCallback)
         } else {

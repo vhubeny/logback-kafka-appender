@@ -15,7 +15,8 @@ class EmbeddedZookeeper @JvmOverloads constructor(port: Int = -1, tickTime: Int 
     private var factory: ServerCnxnFactory? = null
     private var snapshotDir: File? = null
     private var logDir: File? = null
-
+    val connection: String
+        get() = "localhost:$port"
     init {
         this.port = resolvePort(port)
         this.tickTime = tickTime
@@ -33,8 +34,8 @@ class EmbeddedZookeeper @JvmOverloads constructor(port: Int = -1, tickTime: Int 
             port = TestUtils.availablePort
         }
         factory = NIOServerCnxnFactory.createFactory(InetSocketAddress("localhost", port), 1024)
-        snapshotDir = TestUtils.constructTempDir("embeeded-zk/snapshot")
-        logDir = TestUtils.constructTempDir("embeeded-zk/log")
+        snapshotDir = TestUtils.constructTempDir("embedded-zk/snapshot")
+        logDir = TestUtils.constructTempDir("embedded-zk/log")
         val zooKeeperServer = ZooKeeperServer(snapshotDir, logDir, tickTime)
         try {
             factory!!.startup(zooKeeperServer)
@@ -64,10 +65,7 @@ class EmbeddedZookeeper @JvmOverloads constructor(port: Int = -1, tickTime: Int 
         }
     }
 
-    val connection: String
-        get() = "localhost:$port"
-
     override fun toString(): String {
-        return "EmbeddedZookeeper{" + "connection=" + connection + '}'
+        return "EmbeddedZookeeper{connection=$connection}"
     }
 }

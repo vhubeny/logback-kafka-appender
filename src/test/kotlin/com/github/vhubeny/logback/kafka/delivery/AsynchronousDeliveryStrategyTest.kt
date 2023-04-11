@@ -69,7 +69,6 @@ class AsynchronousDeliveryStrategyTest {
             )
         ).thenThrow(exception)
         unit.send(producer, record, "msg", failedDeliveryCallback)
-        Mockito.verify(failedDeliveryCallback)
-            .onFailedDelivery(ArgumentMatchers.eq("msg"), ArgumentMatchers.same(exception))
+        Mockito.verify(failedDeliveryCallback).onFailedDelivery(ArgumentMatchers.eq("msg"), ArgumentMatchers.same(exception))
     }
 }

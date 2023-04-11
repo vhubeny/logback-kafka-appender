@@ -18,57 +18,56 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentCaptor
-import org.mockito.ArgumentMatchers
-import org.mockito.Mockito
+import org.mockito.Mockito.*
+import org.mockito.kotlin.any
 
 class KafkaAppenderTest {
-    val unit = KafkaAppender<ILoggingEvent>()
-    val ctx = LoggerContext()
-    val encoder: Encoder<ILoggingEvent> = Mockito.mock(
-        Encoder::class.java
-    ) as Encoder<ILoggingEvent>
-    private val keyingStrategy: KeyingStrategy<ILoggingEvent> = Mockito.mock(
-        KeyingStrategy::class.java
-    ) as KeyingStrategy<ILoggingEvent>
-    private val deliveryStrategy = Mockito.mock(
-        DeliveryStrategy::class.java
-    )
+    private val appender = KafkaAppender<ILoggingEvent>()
+    private val ctx = LoggerContext()
+
+    private val encoder: Encoder<ILoggingEvent> = mock()
+    private val keyingStrategy: KeyingStrategy<ILoggingEvent> = mock()
+    private val deliveryStrategy : DeliveryStrategy = mock()
+
+    private inline fun <reified T: Any> mock() : T {
+        return mock(T::class.java)
+    }
 
     @Before
     fun before() {
         ctx.name = "testctx"
         ctx.statusManager = BasicStatusManager()
-        unit.context = ctx
-        unit.name = "kafkaAppenderBase"
-        unit.encoder = encoder
-        unit.topic = "topic"
-        unit.addProducerConfig("bootstrap.servers=localhost:1234")
-        unit.keyingStrategy = keyingStrategy
-        unit.deliveryStrategy = deliveryStrategy
+        appender.context = ctx
+        appender.name = "kafkaAppenderBase"
+        appender.encoder = encoder
+        appender.topic = "topic"
+        appender.addProducerConfig("bootstrap.servers=localhost:1234")
+        appender.keyingStrategy = keyingStrategy
+        appender.deliveryStrategy = deliveryStrategy
         ctx.start()
     }
 
     @After
     fun after() {
         ctx.stop()
-        unit.stop()
+        appender.stop()
     }
 
     @Test
     fun testPerfectStartAndStop() {
-        unit.start()
-        Assert.assertTrue("isStarted", unit.isStarted)
-        unit.stop()
-        Assert.assertFalse("isStopped", unit.isStarted)
+        appender.start()
+        Assert.assertTrue("isStarted", appender.isStarted)
+        appender.stop()
+        Assert.assertFalse("isStopped", appender.isStarted)
         Assert.assertThat(ctx.statusManager.copyOfStatusList, Matchers.empty())
-        Mockito.verifyZeroInteractions(encoder, keyingStrategy, deliveryStrategy)
+        verifyNoInteractions(encoder,keyingStrategy,deliveryStrategy)
     }
 
     @Test
     fun testDontStartWithoutTopic() {
-        unit.topic = null
-        unit.start()
-        Assert.assertFalse("isStarted", unit.isStarted)
+        appender.topic = null
+        appender.start()
+        Assert.assertFalse("isStarted", appender.isStarted)
         Assert.assertThat(
             ctx.statusManager.copyOfStatusList,
             Matchers.hasItem(ErrorStatus("No topic set for the appender named [\"kafkaAppenderBase\"].", null))
@@ -77,9 +76,9 @@ class KafkaAppenderTest {
 
     @Test
     fun testDontStartWithoutBootstrapServers() {
-        unit.producerConfig.clear()
-        unit.start()
-        Assert.assertFalse("isStarted", unit.isStarted)
+        appender.producerConfig.clear()
+        appender.start()
+        Assert.assertFalse("isStarted", appender.isStarted)
         Assert.assertThat(
             ctx.statusManager.copyOfStatusList,
             Matchers.hasItem(
@@ -93,9 +92,9 @@ class KafkaAppenderTest {
 
     @Test
     fun testDontStartWithoutEncoder() {
-        unit.encoder = null
-        unit.start()
-        Assert.assertFalse("isStarted", unit.isStarted)
+        appender.encoder = null
+        appender.start()
+        Assert.assertFalse("isStarted", appender.isStarted)
         Assert.assertThat(
             ctx.statusManager.copyOfStatusList,
             Matchers.hasItem(ErrorStatus("No encoder set for the appender named [\"kafkaAppenderBase\"].", null))
@@ -104,26 +103,37 @@ class KafkaAppenderTest {
 
     @Test
     fun testAppendUsesKeying() {
-        Mockito.`when`(
+        `when`(
             encoder.encode(
-                ArgumentMatchers.any(
+                any(
                     ILoggingEvent::class.java
                 )
             )
         ).thenReturn(byteArrayOf(0x00, 0x00))
-        unit.start()
+        appender.start()
         val evt = LoggingEvent("fqcn", ctx.getLogger("logger"), Level.ALL, "message", null, arrayOfNulls(0))
-        unit.append(evt)
+        appender.append(evt)
+
         verifyMock(evt)
-        Mockito.verify(keyingStrategy).createKey(ArgumentMatchers.same(evt))
+        /*
+        verify(deliveryStrategy).send(
+            any(KafkaProducer::class.java)
+            , any<ProducerRecord<Any,Any>>()
+            , eq(evt)
+            , any<FailedDeliveryCallback<ILoggingEvent>>()
+
+        )
+
+         */
+        verify(keyingStrategy).createKey(same(evt))
         verifyMock(evt)
     }
 
     @Test
     fun testAppendUsesPreConfiguredPartition() {
-        Mockito.`when`(
+        `when`(
             encoder.encode(
-                ArgumentMatchers.any(
+                any(
                     ILoggingEvent::class.java
                 )
             )
@@ -131,10 +141,10 @@ class KafkaAppenderTest {
         val producerRecordCaptor = ArgumentCaptor.forClass(
             ProducerRecord::class.java
         ) as ArgumentCaptor<ProducerRecord<Any, Any>>
-        unit.partition = 1
-        unit.start()
+        appender.partition = 1
+        appender.start()
         val evt = LoggingEvent("fqcn", ctx.getLogger("logger"), Level.ALL, "message", null, arrayOfNulls(0))
-        unit.append(evt)
+        appender.append(evt)
         verifyMock(evt, producerRecordCaptor)
         val value = producerRecordCaptor.value
         Assert.assertThat(value.partition(), Matchers.equalTo(1))
@@ -142,14 +152,14 @@ class KafkaAppenderTest {
 
     @Test
     fun testDeferredAppend() {
-        Mockito.`when`(
+        `when`(
             encoder.encode(
-                ArgumentMatchers.any(
+                any(
                     ILoggingEvent::class.java
                 )
             )
         ).thenReturn(byteArrayOf(0x00, 0x00))
-        unit.start()
+        appender.start()
         val deferredEvent = LoggingEvent(
             "fqcn",
             ctx.getLogger("org.apache.kafka.clients.logger"),
@@ -158,25 +168,25 @@ class KafkaAppenderTest {
             null,
             arrayOfNulls(0)
         )
-        unit.doAppend(deferredEvent)
-        verifyMock(deferredEvent)
+        appender.doAppend(deferredEvent)
+        verifyMock(deferredEvent, null)
 
         val evt = LoggingEvent("fqcn", ctx.getLogger("logger"), Level.ALL, "message", null, arrayOfNulls(0))
-        unit.doAppend(evt)
-        verifyMock(evt)
-        verifyMock(evt)
+        appender.doAppend(evt)
+        verifyMock(evt, null)
+        verifyMock(evt, null)
     }
 
     private fun verifyMock(evt: LoggingEvent, recordCaptor: ArgumentCaptor<ProducerRecord<Any, Any>>? = null) {
-        Mockito.verify(deliveryStrategy).send<Any, Any, LoggingEvent>(
-            ArgumentMatchers.any(
+        verify(deliveryStrategy).send<Any, Any, LoggingEvent>(
+            any(
                 KafkaProducer::class.java
             ) as KafkaProducer<Any, Any>,
-            recordCaptor?.capture() ?: ArgumentMatchers.any(
+            recordCaptor?.capture() ?: any(
                 ProducerRecord::class.java
             ) as ProducerRecord<Any, Any>,
-            ArgumentMatchers.eq(evt),
-            ArgumentMatchers.any(
+            eq(evt),
+            any(
                 FailedDeliveryCallback::class.java
             ) as FailedDeliveryCallback<LoggingEvent>
         )

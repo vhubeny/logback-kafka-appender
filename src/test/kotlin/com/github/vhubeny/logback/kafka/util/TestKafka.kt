@@ -10,20 +10,20 @@ class TestKafka internal constructor(
     private val kafkaCluster: EmbeddedKafkaCluster
 ) {
     @JvmOverloads
-    fun createClient(consumerProperties: MutableMap<String?, Any?> = HashMap()): KafkaConsumer<ByteArray, ByteArray> {
+    fun createClient(consumerProperties: MutableMap<String, Any> = HashMap()): KafkaConsumer<ByteArray, ByteArray> {
         consumerProperties[ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG] = brokerList
-        //consumerProperties.put("group.id", "simple-consumer-" + new Random().nextInt());
         consumerProperties[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = "false"
         consumerProperties["auto.offset.reset"] = "earliest"
         consumerProperties["key.deserializer"] = ByteArrayDeserializer::class.java.name
-        consumerProperties["value.deserializer"] =
-            ByteArrayDeserializer::class.java.name
+        consumerProperties["value.deserializer"] = ByteArrayDeserializer::class.java.name
         return KafkaConsumer(consumerProperties)
     }
+    /*
+        val zookeeperConnection: String
+            get() = zookeeper.connection
 
-    val zookeeperConnection: String?
-        get() = zookeeper.connection
-    val brokerList: String?
+     */
+    val brokerList: String
         get() = kafkaCluster.brokerList
 
     fun shutdown() {
@@ -46,8 +46,8 @@ class TestKafka internal constructor(
                 ports.add(-1)
             }
             val properties: MutableMap<String?, String?> = HashMap()
-            properties["num.partitions"] = Integer.toString(partitionCount)
-            properties["default.replication.factor"] = Integer.toString(replicationFactor)
+            properties["num.partitions"] = partitionCount.toString()
+            properties["default.replication.factor"] = replicationFactor.toString()
             return createTestKafka(ports, properties)
         }
 
