@@ -26,17 +26,17 @@ class KafkaAppenderIT {
     @JvmField
     @Rule
     var collector = ErrorCollector()
-    private var kafka: TestKafka? = null
-    private var unit: KafkaAppender<ILoggingEvent>? = null
+    private lateinit var kafka: TestKafka
+    private lateinit var unit: KafkaAppender<ILoggingEvent>
     private val fallbackLoggingEvents: MutableList<ILoggingEvent> = ArrayList()
-    private var loggerContext: LoggerContext? = null
+    private lateinit var loggerContext: LoggerContext
     @Before
     @Throws(IOException::class, InterruptedException::class)
     fun beforeLogSystemInit() {
         kafka = TestKafka.Companion.createTestKafka(1, 1, 1)
         loggerContext = LoggerContext()
-        loggerContext!!.putProperty("brokers.list", kafka!!.brokerList)
-        loggerContext!!.statusManager.add { status ->
+        loggerContext.putProperty("brokers.list", kafka!!.brokerList)
+        loggerContext.statusManager.add { status ->
             if (status.effectiveLevel > Status.INFO) {
                 System.err.println(status.toString())
                 if (status.throwable != null) {
@@ -48,26 +48,26 @@ class KafkaAppenderIT {
                 println(status.toString())
             }
         }
-        loggerContext!!.putProperty("HOSTNAME", "localhost")
+        loggerContext.putProperty("HOSTNAME", "localhost")
         unit = KafkaAppender()
         val patternLayoutEncoder = PatternLayoutEncoder()
         patternLayoutEncoder.pattern = "%msg"
         patternLayoutEncoder.context = loggerContext
         patternLayoutEncoder.charset = Charset.forName("UTF-8")
         patternLayoutEncoder.start()
-        unit!!.encoder = patternLayoutEncoder
-        unit!!.topic = "logs"
-        unit!!.name = "TestKafkaAppender"
-        unit!!.context = loggerContext
-        unit!!.keyingStrategy = NoKeyKeyingStrategy()
-        unit!!.deliveryStrategy = AsynchronousDeliveryStrategy()
-        unit!!.addAppender(fallbackAppender)
-        unit!!.addProducerConfigValue(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafka!!.brokerList!!)
-        unit!!.addProducerConfigValue(ProducerConfig.ACKS_CONFIG, "1")
-        unit!!.addProducerConfigValue(ProducerConfig.MAX_BLOCK_MS_CONFIG, "2000")
-        unit!!.addProducerConfigValue(ProducerConfig.LINGER_MS_CONFIG, "100")
-        unit!!.partition = 0
-        unit!!.addAppender(object : AppenderBase<ILoggingEvent>() {
+        unit.encoder = patternLayoutEncoder
+        unit.topic = "logs"
+        unit.name = "TestKafkaAppender"
+        unit.context = loggerContext
+        unit.keyingStrategy = NoKeyKeyingStrategy()
+        unit.deliveryStrategy = AsynchronousDeliveryStrategy()
+        unit.addAppender(fallbackAppender)
+        unit.addProducerConfigValue(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafka.brokerList)
+        unit.addProducerConfigValue(ProducerConfig.ACKS_CONFIG, "1")
+        unit.addProducerConfigValue(ProducerConfig.MAX_BLOCK_MS_CONFIG, "2000")
+        unit.addProducerConfigValue(ProducerConfig.LINGER_MS_CONFIG, "100")
+        unit.partition = 0
+        unit.addAppender(object : AppenderBase<ILoggingEvent>() {
             override fun append(eventObject: ILoggingEvent) {
                 fallbackLoggingEvents.add(eventObject)
             }
@@ -82,17 +82,17 @@ class KafkaAppenderIT {
 
     @After
     fun tearDown() {
-        kafka!!.shutdown()
-        kafka!!.awaitShutdown()
+        kafka.shutdown()
+        kafka.awaitShutdown()
     }
 
     @Test
     fun testLogging() {
         val messageCount = 2048
         val messageSize = 1024
-        val logger = loggerContext!!.getLogger("ROOT")
-        unit!!.start()
-        Assert.assertTrue("appender is started", unit!!.isStarted)
+        val logger = loggerContext.getLogger("ROOT")
+        unit.start()
+        Assert.assertTrue("appender is started", unit.isStarted)
         val messages = BitSet(messageCount)
         for (i in 0 until messageCount) {
             val prefix = "$i;"
@@ -105,12 +105,12 @@ class KafkaAppenderIT {
                 sb.append(bbUShort)
             }
             val loggingEvent = LoggingEvent("a.b.c.d", logger, Level.INFO, sb.toString(), null, arrayOfNulls(0))
-            unit!!.append(loggingEvent)
+            unit.append(loggingEvent)
             messages.set(i)
         }
-        unit!!.stop()
-        Assert.assertFalse("appender is stopped", unit!!.isStarted)
-        val javaConsumerConnector = kafka!!.createClient()
+        unit.stop()
+        Assert.assertFalse("appender is stopped", unit.isStarted)
+        val javaConsumerConnector = kafka.createClient()
         javaConsumerConnector.assign(listOf(TopicPartition("logs", 0)))
         javaConsumerConnector.seekToBeginning(listOf(TopicPartition("logs", 0)))
         val position = javaConsumerConnector.position(TopicPartition("logs", 0))

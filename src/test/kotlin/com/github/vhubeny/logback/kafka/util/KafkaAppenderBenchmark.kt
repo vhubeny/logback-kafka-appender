@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory
 class KafkaAppenderBenchmark {
     @Rule
     var benchmarkRun: TestRule = BenchmarkRule()
-    private var logger: Logger? = null
+    private lateinit var logger: Logger
     @Before
     fun before() {
         LoggerFactory.getLogger("triggerLogInitialization")
@@ -36,7 +36,7 @@ class KafkaAppenderBenchmark {
     )
     fun benchmark() {
         for (i in 0..99999) {
-            logger!!.info("A VERY IMPORTANT LOG MESSAGE {}", i)
+            logger.info("A VERY IMPORTANT LOG MESSAGE {}", i)
         }
     }
 }

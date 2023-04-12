@@ -7,7 +7,7 @@ import org.apache.kafka.common.errors.TimeoutException
 
 class AsynchronousDeliveryStrategy : DeliveryStrategy {
     override fun <K, V, E> send(
-        producer: Producer<K, V>, record: ProducerRecord<K, V>, event: E,
+        producer: Producer<K, V>, record: ProducerRecord<K, V>?, event: E,
         failedDeliveryCallback: FailedDeliveryCallback<E>
     ): Boolean {
         return try {

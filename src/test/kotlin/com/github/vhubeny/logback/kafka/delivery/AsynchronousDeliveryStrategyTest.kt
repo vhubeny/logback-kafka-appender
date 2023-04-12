@@ -1,24 +1,25 @@
 package com.github.vhubeny.logback.kafka.delivery
 
+import com.nhaarman.mockitokotlin2.*
 import org.apache.kafka.clients.producer.Callback
 import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.errors.TimeoutException
+import org.junit.Before
 import org.junit.Test
-import org.mockito.ArgumentCaptor
-import org.mockito.ArgumentMatchers
-import org.mockito.Mockito
+import org.mockito.*
+import org.mockito.ArgumentMatchers.anyString
+import org.mockito.Mockito.`when`
+import org.mockito.MockitoAnnotations.openMocks
 import java.io.IOException
 
 class AsynchronousDeliveryStrategyTest {
-    private val producer = Mockito.mock(
-        Producer::class.java as Class<Producer<String?, String>>
-    )
-    private val failedDeliveryCallback = Mockito.mock(
-        FailedDeliveryCallback::class.java as Class<FailedDeliveryCallback<String>>
-    )
+    @Captor
+    private lateinit var callbackCaptor: ArgumentCaptor<Callback>
+    private val producer: Producer<String?, String> = mock()
+    private val failedDeliveryCallback: FailedDeliveryCallback<String> = Mockito.mock()
     private val unit = AsynchronousDeliveryStrategy()
     private val topicAndPartition = TopicPartition("topic", 0)
     private val recordMetadata = RecordMetadata(
@@ -26,20 +27,20 @@ class AsynchronousDeliveryStrategyTest {
             .currentTimeMillis(), null, 32, 64
     )
 
+    @Before
+    fun before() {
+        openMocks(this);
+    }
     @Test
     fun testCallbackWillNotTriggerOnFailedDeliveryOnNoException() {
         val record = ProducerRecord<String?, String>("topic", 0, null, "msg")
         unit.send(producer, record, "msg", failedDeliveryCallback)
-        val callbackCaptor = ArgumentCaptor.forClass(
-            Callback::class.java
-        )
-        Mockito.verify(producer).send(Mockito.refEq(record), callbackCaptor.capture())
+
+        verify(producer).send(Mockito.refEq(record), callbackCaptor.capture())
         val callback = callbackCaptor.value
         callback.onCompletion(recordMetadata, null)
-        Mockito.verify(failedDeliveryCallback, Mockito.never()).onFailedDelivery(
-            ArgumentMatchers.anyString(), ArgumentMatchers.any(
-                Throwable::class.java
-            )
+        verify(failedDeliveryCallback, never()).onFailedDelivery(
+            anyString(), any()
         )
     }
 
@@ -48,27 +49,20 @@ class AsynchronousDeliveryStrategyTest {
         val exception = IOException("KABOOM")
         val record = ProducerRecord<String?, String>("topic", 0, null, "msg")
         unit.send(producer, record, "msg", failedDeliveryCallback)
-        val callbackCaptor = ArgumentCaptor.forClass(
-            Callback::class.java
-        )
-        Mockito.verify(producer).send(Mockito.refEq(record), callbackCaptor.capture())
+        verify(producer).send(Mockito.refEq(record), callbackCaptor.capture())
         val callback = callbackCaptor.value
         callback.onCompletion(recordMetadata, exception)
-        Mockito.verify(failedDeliveryCallback).onFailedDelivery("msg", exception)
+        verify(failedDeliveryCallback).onFailedDelivery(eq("msg"), eq(exception))
     }
 
     @Test
     fun testCallbackWillTriggerOnFailedDeliveryOnProducerSendTimeout() {
         val exception = TimeoutException("miau")
         val record = ProducerRecord<String?, String>("topic", 0, null, "msg")
-        Mockito.`when`(
-            producer.send(
-                ArgumentMatchers.same(record), ArgumentMatchers.any(
-                    Callback::class.java
-                )
-            )
+        `when`(
+            producer.send(same(record), any())
         ).thenThrow(exception)
         unit.send(producer, record, "msg", failedDeliveryCallback)
-        Mockito.verify(failedDeliveryCallback).onFailedDelivery(ArgumentMatchers.eq("msg"), ArgumentMatchers.same(exception))
+        verify(failedDeliveryCallback).onFailedDelivery(eq("msg"), same(exception))
     }
 }

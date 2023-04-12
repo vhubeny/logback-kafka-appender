@@ -19,7 +19,7 @@ class KafkaAppender<E> : KafkaAppenderConfig<E>() {
     private val queue = ConcurrentLinkedQueue<E>()
 
     private val failedDeliveryCallback = object : FailedDeliveryCallback<E> {
-        override fun onFailedDelivery(evt: E, throwable: Throwable?) {
+        override fun onFailedDelivery(evt: E?, throwable: Throwable?) {
             appender.appendLoopOnAppenders(evt)
         }
     }

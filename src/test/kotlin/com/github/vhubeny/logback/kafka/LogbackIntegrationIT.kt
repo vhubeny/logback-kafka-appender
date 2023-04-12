@@ -12,9 +12,10 @@ import java.io.IOException
 import java.nio.charset.Charset
 
 class LogbackIntegrationIT {
+    @JvmField
     @Rule
     var collector = ErrorCollector()
-    private var kafka: TestKafka? = null
+    private lateinit var kafka: TestKafka
     private var logger: Logger? = null
     @Before
     @Throws(IOException::class, InterruptedException::class)
@@ -25,8 +26,8 @@ class LogbackIntegrationIT {
 
     @After
     fun tearDown() {
-        kafka!!.shutdown()
-        kafka!!.awaitShutdown()
+        kafka.shutdown()
+        kafka.awaitShutdown()
     }
 
     @Test
@@ -34,7 +35,7 @@ class LogbackIntegrationIT {
         for (i in 0..999) {
             logger!!.info("message$i")
         }
-        val client = kafka!!.createClient()
+        val client = kafka.createClient()
         client.assign(listOf(TopicPartition("logs", 0)))
         client.seekToBeginning(listOf(TopicPartition("logs", 0)))
         var no = 0
