@@ -21,7 +21,7 @@ Add `logback-kafka-appender` and `logback-classic` as library dependencies to yo
 ```xml
 [maven pom.xml]
 <dependency>
-    <groupId>com.github.danielwegener</groupId>
+    <groupId>com.github.vhubeny</groupId>
     <artifactId>logback-kafka-appender</artifactId>
     <version>0.2.0</version>
     <scope>runtime</scope>
@@ -36,7 +36,7 @@ Add `logback-kafka-appender` and `logback-classic` as library dependencies to yo
 
 ```scala
 // [build.sbt]
-libraryDependencies += "com.github.danielwegener" % "logback-kafka-appender" % "0.2.0"
+libraryDependencies += "com.github.vhubeny" % "logback-kafka-appender" % "0.2.0"
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.3"
 ```
 
@@ -53,13 +53,13 @@ This is an example `logback.xml` that uses a common `PatternLayout` to encode a 
     </appender>
 
     <!-- This is the kafkaAppender -->
-    <appender name="kafkaAppender" class="com.github.danielwegener.logback.kafka.KafkaAppender">
+    <appender name="kafkaAppender" class="com.github.vhubeny.logback.kafka.KafkaAppender">
             <encoder>
                 <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
             </encoder>
             <topic>logs</topic>
-            <keyingStrategy class="com.github.danielwegener.logback.kafka.keying.NoKeyKeyingStrategy" />
-            <deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy" />
+            <keyingStrategy class="com.github.vhubeny.logback.kafka.keying.NoKeyKeyingStrategy" />
+            <deliveryStrategy class="com.github.vhubeny.logback.kafka.delivery.AsynchronousDeliveryStrategy" />
             
             <!-- Optional parameter to use a fixed partition -->
             <!-- <partition>0</partition> -->
@@ -114,7 +114,7 @@ An example configuration could look like this:
 <configuration>
 
     <!-- This is the kafkaAppender -->
-    <appender name="kafkaAppender" class="com.github.danielwegener.logback.kafka.KafkaAppender">
+    <appender name="kafkaAppender" class="com.github.vhubeny.logback.kafka.KafkaAppender">
     <!-- Kafka Appender configuration -->
     </appender>
 
@@ -133,7 +133,7 @@ An example configuration could look like this:
 
 #### Custom delivery strategies
 
-You may also roll your own delivery strategy. Just extend `com.github.danielwegener.logback.kafka.delivery.DeliveryStrategy`.
+You may also roll your own delivery strategy. Just extend `com.github.vhubeny.logback.kafka.delivery.DeliveryStrategy`.
 
 #### Fallback-Appender
 
@@ -203,7 +203,7 @@ If none of the above keying strategies satisfies your requirements, you can easi
 
 ```java
 package foo;
-import com.github.danielwegener.logback.kafka.keying.KeyingStrategy;
+import com.github.vhubeny.logback.kafka.keying.KeyingStrategy;
 
 /* This is a valid example but does not really make much sense */
 public class LevelKeyingStrategy implements KeyingStrategy<ILoggingEvent> {
